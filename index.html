@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Pautan Bersepadu</title>
+    
+    <!-- Tailwind CSS untuk penataan gaya (styling) pantas -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Konfigurasi Fon Google (Poppins) untuk rupa moden -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome untuk ikon-ikon yang menarik -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    keyframes: {
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '25%': { transform: 'translateX(-5px)' },
+                            '75%': { transform: 'translateX(5px)' }
+                        }
+                    },
+                    animation: {
+                        shake: 'shake 0.3s ease-in-out',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animasi Kemasukan (Entrance Animations) */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-up {
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        /* Sembunyikan elemen sebelum animasi bermula */
+        .reveal-item { opacity: 0; }
+
+        /* Animasi Latar Belakang Ceria (Blob Animation) */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
+        /* Penangguhan Animasi untuk kesan bertingkat (Staggered effect) */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+        .delay-600 { animation-delay: 600ms; }
+        
+        /* Ciri khas latar belakang (Glassmorphism) */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-sky-100 via-white to-amber-50 min-h-screen text-slate-800 antialiased flex flex-col items-center py-12 px-4 selection:bg-brand-500 selection:text-white relative overflow-x-hidden">
+
+    <!-- OVERLAY LOADING SCREEN AWAL & SELEPAS TEKAN LINK -->
+    <div id="loading-screen" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <!-- Ikon spinner & Logo -->
+        <div class="relative w-28 h-28 mb-8">
+            <!-- Gelung berputar (Spinning ring) -->
+            <div class="absolute inset-0 border-4 border-sky-100 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-sky-500 rounded-full border-t-transparent animate-spin"></div>
+            
+            <!-- Logo sekolah berserta animasi denyutan (pulse) -->
+            <div class="absolute inset-2 bg-white rounded-full overflow-hidden flex items-center justify-center shadow-sm">
+                <img src="https://i.postimg.cc/V6LnHkFk/LOGO_SKSE_utk_background_putih_(2).jpg" alt="Logo SKSE Loading" class="w-full h-full object-contain p-2 animate-pulse">
+            </div>
+        </div>
+        <h2 id="loading-text" class="text-xl font-bold text-slate-700 animate-pulse tracking-wide">Memuatkan Portal...</h2>
+        <p class="text-sm text-slate-500 mt-2">Sila tunggu sebentar</p>
+    </div>
+
+    <!-- MODAL POPUP KATA LALUAN -->
+    <div id="password-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div id="password-modal-content" class="glass-panel w-full max-w-sm rounded-3xl p-8 transform scale-95 transition-transform duration-300 shadow-2xl relative">
+            <!-- Butang Tutup (Close) -->
+            <button id="close-modal" class="absolute top-5 right-5 text-slate-400 hover:text-rose-500 transition-colors">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+            
+            <!-- Ikon Mangga Kunci -->
+            <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-5 mx-auto shadow-inner">
+                <i class="fa-solid fa-lock text-2xl"></i>
+            </div>
+            
+            <!-- Teks Arahan -->
+            <h3 class="text-xl font-bold text-center text-slate-800 mb-2">Akses Terhad</h3>
+            <p class="text-sm text-center text-slate-500 mb-6">Pautan ini dilindungi. Sila masukkan kata laluan untuk meneruskan.</p>
+            
+            <!-- Input Kata Laluan -->
+            <div class="relative mb-3">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-key text-slate-400"></i>
+                </div>
+                <input type="password" id="modal-password-input" class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-sky-500 bg-white/70 transition-colors" placeholder="Kata laluan...">
+            </div>
+            
+            <!-- Mesej Ralat (Error Message) -->
+            <p id="password-error" class="text-xs text-rose-500 text-center font-medium h-4 mb-4 hidden">Kata laluan tidak sah. Sila cuba lagi.</p>
+            
+            <!-- Butang Sahkan -->
+            <button id="submit-password" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
+                Sahkan & Buka Pautan
+            </button>
+        </div>
+    </div>
+
+    <!-- Latar Belakang Dekoratif Ceria (Colorful Blobs) -->
+    <div class="absolute top-[-5%] left-[-10%] w-80 h-80 bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
+    <div class="absolute top-[15%] right-[-5%] w-72 h-72 bg-amber-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+    <div class="absolute bottom-[20%] left-[10%] w-80 h-80 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000"></div>
+
+    <!-- Bekas Utama (Main Container) -->
+    <main class="w-full max-w-md relative z-10 flex-grow flex flex-col items-center">
+        
+        <!-- Bahagian Header / Profil -->
+        <header class="text-center mb-10 reveal-item">
+            <div class="w-28 h-28 mx-auto bg-white rounded-full shadow-xl border-4 border-white flex items-center justify-center mb-4 overflow-hidden relative group">
+                <!-- Ikon Sekolah / Logo -->
+                <img src="https://i.postimg.cc/V6LnHkFk/LOGO_SKSE_utk_background_putih_(2).jpg" alt="Logo SKSE" class="w-full h-full object-contain p-1 group-hover:scale-110 transition-transform duration-500">
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800 mb-1 tracking-tight">Portal Bersepadu SKSE</h1>
+            <p class="text-sm text-slate-500 font-medium">Sistem Pautan Pantas Rasmi</p>
+        </header>
+
+        <!-- Senarai Pautan (Link Buttons) -->
+        <nav class="w-full flex flex-col gap-4 mb-12">
+            
+            <!-- Link 1: Laman Rasmi SKSE (Tiada Kata Laluan) -->
+            <a href="https://www.google.com" id="link-utama" class="block group reveal-item delay-100 public-link">
+                <div class="bg-gradient-to-br from-blue-600 to-sky-500 rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 transform hover:-translate-y-1 border border-blue-400/50 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300 ease-out z-0"></div>
+                    <!-- Elemen dekoratif latar belakang -->
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>
+                    
+                    <div class="flex items-center gap-4 relative z-10">
+                        <div class="w-14 h-14 rounded-full bg-white/20 text-white flex items-center justify-center backdrop-blur-md border border-white/30 group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
+                            <i class="fa-solid fa-globe text-2xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-blue-100 text-xs font-medium uppercase tracking-wider mb-0.5">Laman Utama</span>
+                            <span class="font-bold text-white text-lg tracking-wide">Laman Rasmi SKSE</span>
+                        </div>
+                    </div>
+                    <!-- Ikon Kunci Terbuka / Public -->
+                    <i class="fa-solid fa-arrow-right text-white/80 group-hover:text-white transform group-hover:translate-x-2 transition-all duration-300 relative z-10 text-xl"></i>
+                </div>
+            </a>
+
+            <!-- Grid container untuk pautan lain (2x2) -->
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Link 2: e-Kelas (Dilindungi Kata Laluan) -->
+                <a href="#ekelas" id="link-ekelas" class="block group reveal-item delay-200 protected-link">
+                    <div class="glass-panel rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:bg-white border border-transparent hover:border-sky-200 relative overflow-hidden h-full">
+                        <div class="absolute top-3 right-3 text-slate-300 group-hover:text-sky-400 transition-colors z-10 text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div class="absolute inset-0 bg-sky-50/50 w-full h-0 group-hover:h-full transition-all duration-300 ease-out z-0 bottom-0 top-auto"></div>
+                        <div class="w-12 h-12 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center mb-3 group-hover:bg-sky-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-sky-500/30 transition-all duration-300 relative z-10">
+                            <i class="fa-solid fa-laptop-code text-xl"></i>
+                        </div>
+                        <span class="font-semibold text-slate-700 group-hover:text-sky-700 transition-colors duration-300 relative z-10 text-sm">e-Kelas</span>
+                    </div>
+                </a>
+
+                <!-- Link 3: Portal PPKI (Dilindungi Kata Laluan) -->
+                <a href="#ppki" id="link-ppki" class="block group reveal-item delay-300 protected-link">
+                    <div class="glass-panel rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:bg-white border border-transparent hover:border-emerald-200 relative overflow-hidden h-full">
+                        <div class="absolute top-3 right-3 text-slate-300 group-hover:text-emerald-400 transition-colors z-10 text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div class="absolute inset-0 bg-emerald-50/50 w-full h-0 group-hover:h-full transition-all duration-300 ease-out z-0 bottom-0 top-auto"></div>
+                        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 group-hover:bg-emerald-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-emerald-500/30 transition-all duration-300 relative z-10">
+                            <i class="fa-solid fa-users text-xl"></i>
+                        </div>
+                        <span class="font-semibold text-slate-700 group-hover:text-emerald-700 transition-colors duration-300 relative z-10 text-sm">Portal PPKI</span>
+                    </div>
+                </a>
+
+                <!-- Link 4: MBWA (Dilindungi Kata Laluan) -->
+                <a href="#mbwa" id="link-mbwa" class="block group reveal-item delay-400 protected-link">
+                    <div class="glass-panel rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:bg-white border border-transparent hover:border-purple-200 relative overflow-hidden h-full">
+                        <div class="absolute top-3 right-3 text-slate-300 group-hover:text-purple-400 transition-colors z-10 text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div class="absolute inset-0 bg-purple-50/50 w-full h-0 group-hover:h-full transition-all duration-300 ease-out z-0 bottom-0 top-auto"></div>
+                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-3 group-hover:bg-purple-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 transition-all duration-300 relative z-10">
+                            <i class="fa-solid fa-chart-pie text-xl"></i>
+                        </div>
+                        <span class="font-semibold text-slate-700 group-hover:text-purple-700 transition-colors duration-300 relative z-10 text-sm">MBWA</span>
+                    </div>
+                </a>
+
+                <!-- Link 5: Laporan Guru Bertugas (Dilindungi Kata Laluan) -->
+                <a href="#laporan_guru" id="link-laporan" class="block group reveal-item delay-500 protected-link">
+                    <div class="glass-panel rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:bg-white border border-transparent hover:border-rose-200 relative overflow-hidden h-full">
+                        <div class="absolute top-3 right-3 text-slate-300 group-hover:text-rose-400 transition-colors z-10 text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div class="absolute inset-0 bg-rose-50/50 w-full h-0 group-hover:h-full transition-all duration-300 ease-out z-0 bottom-0 top-auto"></div>
+                        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-3 group-hover:bg-rose-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-rose-500/30 transition-all duration-300 relative z-10">
+                            <i class="fa-solid fa-clipboard-user text-xl"></i>
+                        </div>
+                        <span class="font-semibold text-slate-700 group-hover:text-rose-700 transition-colors duration-300 relative z-10 text-sm leading-tight">Laporan Guru<br>Bertugas</span>
+                    </div>
+                </a>
+            </div>
+        </nav>
+    </main>
+
+    <!-- Bahagian Footer & Site Counter -->
+    <footer class="mt-auto w-full max-w-md text-center reveal-item delay-600 relative z-10">
+        <div class="glass-panel rounded-2xl p-6 mb-4 flex flex-col items-center shadow-sm border border-white/60">
+            <div class="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Statistik Pelawat</div>
+            
+            <!-- Paparan Kaunter -->
+            <div class="flex items-baseline gap-2 text-slate-700">
+                <i class="fa-solid fa-eye text-lg text-sky-500"></i>
+                <span id="visit-counter" class="text-3xl font-bold tracking-tight text-slate-800">0</span>
+            </div>
+        </div>
+        
+        <p class="text-xs text-slate-400 font-medium">
+            &copy; <span id="year"></span> Hak Cipta Terpelihara.<br>
+            Direka dengan <i class="fa-solid fa-heart text-rose-400 mx-1 animate-pulse"></i> untuk warga SKSE.
+        </p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            /* =========================================================
+               1. KONFIGURASI DATABASE GOOGLE APPS SCRIPT (GAS)
+               ========================================================= */
+            // Masukkan URL Web App GAS anda di dalam tanda petikan di bawah
+            const GAS_URL = "https://script.google.com/macros/s/AKfycbwwdWtA2CTxTK0LHa1Hwdv7GbHEtI8Kd0DQ8-VIaeMAgIuFxLYZiYp-zkFVGRsWyUi8/exec"; 
+            
+            // Pembolehubah (akan ditimpa oleh data dari GAS jika berjaya)
+            let KATA_LALUAN_SAH = "skse123"; 
+
+            /* =========================================================
+               2. FUNGSI ANIMASI SITE VISIT COUNTER 
+               (Dipindahkan ke atas supaya sedia dipanggil)
+               ========================================================= */
+            document.getElementById('year').textContent = new Date().getFullYear();
+            const counterElement = document.getElementById('visit-counter');
+
+            // Format nombor (contoh: 15,842)
+            const formatNumber = (num) => {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            };
+
+            // Fungsi Animasi yang dipanggil oleh data pangkalan
+            const animateCounter = (targetValue) => {
+                let currentCount = targetValue - 30; 
+                if (currentCount < 0) currentCount = 0;
+
+                const updateCounter = () => {
+                    if (currentCount < targetValue) {
+                        currentCount++;
+                        counterElement.textContent = formatNumber(currentCount);
+                        setTimeout(updateCounter, 30); 
+                    } else {
+                        counterElement.textContent = formatNumber(targetValue);
+                    }
+                };
+                
+                // Mula kira bila loading tamat (2000ms delay keseluruhan)
+                setTimeout(updateCounter, 2000);
+            };
+
+            /* =========================================================
+               3. LOGIK LOADING SCREEN AWAL & FETCH DATA
+               ========================================================= */
+            const loadingScreen = document.getElementById('loading-screen');
+            const loadingText = document.getElementById('loading-text');
+            const revealItems = document.querySelectorAll('.reveal-item');
+            
+            async function muatTurunDataPangkalan() {
+                try {
+                    // Jika URL GAS telah dimasukkan, cuba ambil data
+                    if(GAS_URL !== "LETAK_URL_WEB_APP_GAS_ANDA_DI_SINI") {
+                        loadingText.textContent = "Menyambung ke Pangkalan Data...";
+                        const response = await fetch(GAS_URL);
+                        const data = await response.json();
+                        
+                        // Kemas kini kata laluan dari database
+                        if(data.password) KATA_LALUAN_SAH = data.password;
+                        
+                        // Kemas kini pautan link dari database
+                        if(data.links) {
+                            if(data.links.utama) document.getElementById('link-utama').href = data.links.utama;
+                            if(data.links.ekelas) document.getElementById('link-ekelas').href = data.links.ekelas;
+                            if(data.links.ppki) document.getElementById('link-ppki').href = data.links.ppki;
+                            if(data.links.mbwa) document.getElementById('link-mbwa').href = data.links.mbwa;
+                            if(data.links.laporan) document.getElementById('link-laporan').href = data.links.laporan;
+                        }
+
+                        // Kemas kini dan animasikan statistik pelawat dari database
+                        if(data.visit_count) {
+                            animateCounter(data.visit_count);
+                        }
+                    } else {
+                        // Jika belum masuk URL GAS, jalankan kaunter guna nilai statik
+                        animateCounter(15843);
+                    }
+                } catch (error) {
+                    console.error("Gagal menyambung ke GAS, menggunakan tetapan lalai.", error);
+                    animateCounter(15843); // Fallback jika gagal sambung
+                }
+
+                // Sembunyikan loading screen selepas proses (berjaya atau gagal) selesai
+                setTimeout(() => {
+                    loadingScreen.classList.add('opacity-0');
+                    
+                    // Mula mainkan animasi elemen masuk (fade-up) selepas loading hilang
+                    setTimeout(() => {
+                        loadingScreen.classList.add('hidden');
+                        revealItems.forEach(item => {
+                            item.classList.add('animate-fade-up');
+                        });
+                    }, 500); 
+                }, 800); // Masa penampan untuk pastikan animasi lancar
+            }
+
+            // Jalankan fungsi ambil data sewaktu page dibuka
+            muatTurunDataPangkalan();
+
+            /* =========================================================
+               4. LOGIK KATA LALUAN UNTUK BUTANG TERTENTU
+               ========================================================= */
+            const modal = document.getElementById('password-modal');
+            const modalContent = document.getElementById('password-modal-content');
+            const closeBtn = document.getElementById('close-modal');
+            const passInput = document.getElementById('modal-password-input');
+            const submitBtn = document.getElementById('submit-password');
+            const errorText = document.getElementById('password-error');
+            const protectedLinks = document.querySelectorAll('.protected-link');
+            const publicLinks = document.querySelectorAll('.public-link');
+            
+            let targetUrl = ""; // Simpan link sementara nak masukkan password
+
+            // Buka Modal Kata Laluan
+            function openModal(url) {
+                targetUrl = url;
+                passInput.value = "";
+                errorText.classList.add('hidden');
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+                setTimeout(() => passInput.focus(), 100); // Auto-focus bila popup keluar
+            }
+
+            // Tutup Modal Kata Laluan
+            function closeModal() {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-100');
+                modalContent.classList.add('scale-95');
+                targetUrl = "";
+            }
+
+            // Bind click event untuk semua butang bernombor 2-5 (dilindungi)
+            protectedLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault(); // Halang dari buka link terus
+                    openModal(link.getAttribute('href'));
+                });
+            });
+
+            // Bind click event untuk pautan terbuka (Laman Utama)
+            publicLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showLoadingAndRedirect(link.getAttribute('href'), "Menghubungkan ke Laman Utama...");
+                });
+            });
+
+            // Fungsi Papar Loading & Redirection
+            function showLoadingAndRedirect(url, customText) {
+                loadingText.textContent = customText;
+                loadingScreen.classList.remove('hidden');
+                
+                // Paksa browser kemaskini DOM sblm transition
+                void loadingScreen.offsetWidth; 
+                loadingScreen.classList.remove('opacity-0');
+                
+                // Animasi seolah-olah sedang loading/menyambung (simulasi 1 saat)
+                setTimeout(() => {
+                    window.location.href = url; // Redirect pengguna ke link sebenar
+                    
+                    // (PENTING) Kod fallback di bawah ini khas untuk tujuan Pratonton/Preview di Canvas ini, 
+                    // supaya skrin loading hilang selepas berjaya memandangkan kita guna '#' sebagai URL percubaan.
+                    setTimeout(() => {
+                        loadingScreen.classList.add('opacity-0');
+                        setTimeout(() => loadingScreen.classList.add('hidden'), 500);
+                    }, 500);
+
+                }, 1000);
+            }
+
+            // Fungsi Sahkan Kata Laluan
+            function semakKataLaluan() {
+                if(passInput.value === KATA_LALUAN_SAH) {
+                    closeModal();
+                    showLoadingAndRedirect(targetUrl, "Kata Laluan Sah! Membuka Pautan...");
+                } else {
+                    // Papar ralat dan animasi bergegar (shake)
+                    errorText.classList.remove('hidden');
+                    passInput.classList.add('animate-shake', 'border-rose-500', 'text-rose-500');
+                    
+                    setTimeout(() => {
+                        passInput.classList.remove('animate-shake');
+                    }, 400);
+
+                    // Buang warna merah bila pengguna mula taip semula
+                    passInput.addEventListener('input', function resetStyle() {
+                        passInput.classList.remove('border-rose-500', 'text-rose-500');
+                        errorText.classList.add('hidden');
+                        passInput.removeEventListener('input', resetStyle);
+                    });
+                }
+            }
+
+            // Event Listener Tutup Modal
+            closeBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) closeModal(); // Tutup kalau klik luar kotak modal
+            });
+
+            // Event Listener Submit Modal
+            submitBtn.addEventListener('click', semakKataLaluan);
+            passInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') semakKataLaluan(); // Sahkan jika tekan butang Enter dlm keyboard
+            });
+
+        });
+    </script>
+</body>
+</html>
