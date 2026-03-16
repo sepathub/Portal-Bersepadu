@@ -325,16 +325,22 @@
                         const response = await fetch(GAS_URL);
                         const data = await response.json();
                         
+                        // Periksa jika ada ralat dari GAS (cth: Tab Tetapan tak wujud)
+                        if(data.error) {
+                            console.error("Ralat pangkalan data:", data.error);
+                            alert("Peringatan: " + data.error + " Sila semak ejaan nama tab Google Sheet anda.");
+                        }
+
                         // Kemas kini kata laluan dari database
                         if(data.password) KATA_LALUAN_SAH = data.password;
                         
                         // Kemas kini pautan link dari database
                         if(data.links) {
-                            if(data.links.utama) document.getElementById('link-utama').href = data.links.utama;
-                            if(data.links.ekelas) document.getElementById('link-ekelas').href = data.links.ekelas;
-                            if(data.links.ppki) document.getElementById('link-ppki').href = data.links.ppki;
-                            if(data.links.mbwa) document.getElementById('link-mbwa').href = data.links.mbwa;
-                            if(data.links.laporan) document.getElementById('link-laporan').href = data.links.laporan;
+                            if(data.links.utama && data.links.utama !== "#") document.getElementById('link-utama').href = data.links.utama;
+                            if(data.links.ekelas && data.links.ekelas !== "#") document.getElementById('link-ekelas').href = data.links.ekelas;
+                            if(data.links.ppki && data.links.ppki !== "#") document.getElementById('link-ppki').href = data.links.ppki;
+                            if(data.links.mbwa && data.links.mbwa !== "#") document.getElementById('link-mbwa').href = data.links.mbwa;
+                            if(data.links.laporan && data.links.laporan !== "#") document.getElementById('link-laporan').href = data.links.laporan;
                         }
 
                         // Kemas kini dan animasikan statistik pelawat dari database
@@ -348,6 +354,13 @@
                 } catch (error) {
                     console.error("Gagal menyambung ke GAS, menggunakan tetapan lalai.", error);
                     animateCounter(15843); // Fallback jika gagal sambung
+                    
+                    // Fallback URL jika GAS gagal disambung atau sedang dikemaskini
+                    document.getElementById('link-utama').href = "https://www.moe.gov.my/";
+                    document.getElementById('link-ekelas').href = "https://www.e-kelas.com.my/";
+                    document.getElementById('link-ppki').href = "https://www.google.com/search?q=Portal+PPKI";
+                    document.getElementById('link-mbwa').href = "https://www.google.com/search?q=MBWA";
+                    document.getElementById('link-laporan').href = "https://www.google.com/search?q=Laporan+Guru";
                 }
 
                 // Sembunyikan loading screen selepas proses (berjaya atau gagal) selesai
@@ -404,7 +417,7 @@
             protectedLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault(); // Halang dari buka link terus
-                    openModal(link.getAttribute('href'));
+                    openModal(link.href); // Guna link.href untuk dapatkan URL penuh yang sudah dikemaskini
                 });
             });
 
@@ -412,12 +425,13 @@
             publicLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showLoadingAndRedirect(link.getAttribute('href'), "Menghubungkan ke Laman Utama...");
+                    showLoadingAndRedirect(link.href, "Menghubungkan ke Laman Utama...");
                 });
             });
 
             // Fungsi Papar Loading & Redirection
             function showLoadingAndRedirect(url, customText) {
+                if (!url) return; // Elak ralat jika url tiada/kosong
                 loadingText.textContent = customText;
                 loadingScreen.classList.remove('hidden');
                 
@@ -427,6 +441,15 @@
                 
                 // Animasi seolah-olah sedang loading/menyambung (simulasi 1 saat)
                 setTimeout(() => {
+                    
+                    // Semak jika link masih rosak atau tidak wujud di Google Sheet (masih mengandungi '#' sahaja)
+                    if(url.includes('#') && !url.includes('http')) {
+                        alert("Ralat: Pautan ini belum dimasukkan dengan lengkap ke dalam Google Sheet (Lajur B). Sila kemaskini pangkalan data anda terlebih dahulu.");
+                        loadingScreen.classList.add('opacity-0');
+                        setTimeout(() => loadingScreen.classList.add('hidden'), 500);
+                        return; // Berhenti laksanakan perpindahan link
+                    }
+
                     window.location.href = url; // Redirect pengguna ke link sebenar
                     
                     // (PENTING) Kod fallback di bawah ini khas untuk tujuan Pratonton/Preview di Canvas ini, 
@@ -442,8 +465,9 @@
             // Fungsi Sahkan Kata Laluan
             function semakKataLaluan() {
                 if(passInput.value === KATA_LALUAN_SAH) {
+                    let urlPilihan = targetUrl; // Simpan URL sebelum closeModal() memadamkannya
                     closeModal();
-                    showLoadingAndRedirect(targetUrl, "Kata Laluan Sah! Membuka Pautan...");
+                    showLoadingAndRedirect(urlPilihan, "Kata Laluan Sah! Membuka Pautan...");
                 } else {
                     // Papar ralat dan animasi bergegar (shake)
                     errorText.classList.remove('hidden');
