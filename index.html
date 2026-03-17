@@ -82,6 +82,7 @@
         .delay-400 { animation-delay: 400ms; }
         .delay-500 { animation-delay: 500ms; }
         .delay-600 { animation-delay: 600ms; }
+        .delay-700 { animation-delay: 700ms; }
         
         /* Ciri khas latar belakang (Glassmorphism) */
         .glass-panel {
@@ -245,12 +246,30 @@
                         <span class="font-semibold text-slate-700 group-hover:text-rose-700 transition-colors duration-300 relative z-10 text-sm leading-tight">Laporan Guru<br>Bertugas</span>
                     </div>
                 </a>
+
+                <!-- Link 6: ID Delima Murid (Terbuka / Tanpa Kata Laluan) -->
+                <a href="#delima" id="link-delima" class="block col-span-2 group reveal-item delay-600 public-link">
+                    <div class="bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-lg shadow-fuchsia-500/30 hover:shadow-xl hover:shadow-fuchsia-500/40 transition-all duration-300 transform hover:-translate-y-1 border border-fuchsia-400/50 relative overflow-hidden h-full">
+                        
+                        <!-- Latar belakang hover & efek kilauan -->
+                        <div class="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300 ease-out z-0"></div>
+                        <div class="absolute -left-6 -bottom-6 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>
+                        
+                        <!-- Reka bentuk lebar (wide design) dengan warna ungu cerah menyerlah -->
+                        <div class="flex items-center justify-center gap-4 relative z-10 w-full">
+                            <div class="w-14 h-14 rounded-full bg-white/20 text-white flex items-center justify-center backdrop-blur-md border border-white/30 group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300 flex-shrink-0 shadow-inner">
+                                <i class="fa-solid fa-id-card-clip text-2xl"></i>
+                            </div>
+                            <span class="font-bold text-white tracking-wide text-lg sm:text-xl">ID Delima Murid</span>
+                        </div>
+                    </div>
+                </a>
             </div>
         </nav>
     </main>
 
     <!-- Bahagian Footer & Site Counter -->
-    <footer class="mt-auto w-full max-w-md text-center reveal-item delay-600 relative z-10">
+    <footer class="mt-auto w-full max-w-md text-center reveal-item delay-700 relative z-10">
         <div class="glass-panel rounded-2xl p-6 mb-4 flex flex-col items-center shadow-sm border border-white/60">
             <div class="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Statistik Pelawat</div>
             
@@ -341,6 +360,7 @@
                             if(data.links.ppki && data.links.ppki !== "#") document.getElementById('link-ppki').href = data.links.ppki;
                             if(data.links.mbwa && data.links.mbwa !== "#") document.getElementById('link-mbwa').href = data.links.mbwa;
                             if(data.links.laporan && data.links.laporan !== "#") document.getElementById('link-laporan').href = data.links.laporan;
+                            if(data.links.delima && data.links.delima !== "#") document.getElementById('link-delima').href = data.links.delima;
                         }
 
                         // Kemas kini dan animasikan statistik pelawat dari database
@@ -361,6 +381,7 @@
                     document.getElementById('link-ppki').href = "https://www.google.com/search?q=Portal+PPKI";
                     document.getElementById('link-mbwa').href = "https://www.google.com/search?q=MBWA";
                     document.getElementById('link-laporan').href = "https://www.google.com/search?q=Laporan+Guru";
+                    document.getElementById('link-delima').href = "https://www.google.com/search?q=ID+Delima";
                 }
 
                 // Sembunyikan loading screen selepas proses (berjaya atau gagal) selesai
@@ -421,11 +442,11 @@
                 });
             });
 
-            // Bind click event untuk pautan terbuka (Laman Utama)
+            // Bind click event untuk pautan terbuka (Laman Utama & ID Delima)
             publicLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showLoadingAndRedirect(link.href, "Menghubungkan ke Laman Utama...");
+                    showLoadingAndRedirect(link.href, "Membuka Pautan...");
                 });
             });
 
